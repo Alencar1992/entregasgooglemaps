@@ -12,6 +12,7 @@
         :root {
             --bg-dark: #121212;
             --sidebar-bg: #1e1e1e;
+            --header-gray: #e0e0e0;
             --text-main: #e0e0e0;
             --text-muted: #a0a0a0;
             --alencas-blue: #007bff;
@@ -27,32 +28,43 @@
         #sidebar { 
             width: 420px; 
             background: var(--sidebar-bg); 
-            padding: 25px; 
+            padding: 0; /* Removido padding para o topo encostar nas bordas */
             overflow-y: auto; 
             box-shadow: 4px 0 15px rgba(0,0,0,0.5); 
             z-index: 1000; 
             display: flex; 
             flex-direction: column; 
-            gap: 10px; 
             border-right: 1px solid var(--border-color);
         }
-        
-        /* TÍTULO COM BORDA BRANCA E FONTE AZUL */
-        h1 { 
+
+        /* TOPO CINZA CLARO COM FONTE ESTILOSA */
+        .sidebar-header {
+            background-color: var(--header-gray);
+            padding: 25px 15px;
+            text-align: center;
+            border-bottom: 3px solid var(--alencas-blue);
+        }
+
+        .sidebar-header h1 { 
             color: var(--alencas-blue); 
             margin: 0; 
-            font-size: 32px; 
+            font-family: 'Rockwell', 'Courier New', serif; /* Fonte estilizada */
+            font-size: 34px; 
             font-weight: 900; 
-            text-align: center; 
-            letter-spacing: 2px;
+            letter-spacing: 1px;
             text-transform: uppercase;
-            -webkit-text-stroke: 1.5px white; /* Borda Branca */
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-            padding-bottom: 15px;
-            border-bottom: 2px solid var(--border-color);
+            -webkit-text-stroke: 1.2px white; /* Borda Branca */
+            text-shadow: 2px 2px 0px rgba(0,0,0,0.1);
+        }
+
+        .form-content {
+            padding: 20px 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
         
-        .info-box { background: #1a2332; border-left: 5px solid var(--alencas-blue); padding: 12px; font-size: 13px; color: #8ab4f8; border-radius: 4px; margin-top: 5px;}
+        .info-box { background: #1a2332; border-left: 5px solid var(--alencas-blue); padding: 12px; font-size: 13px; color: #8ab4f8; border-radius: 4px; }
         
         label { display: block; margin-top: 8px; font-weight: 600; color: var(--text-muted); font-size: 11px; text-transform: uppercase; }
         
@@ -71,11 +83,9 @@
         .btn-group { display: flex; gap: 10px; margin-top: 20px; }
         button { flex: 1; padding: 14px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 14px; text-transform: uppercase; transition: 0.2s; color: white; }
         
-        /* BOTÃO CALCULAR VERDE */
         .btn-calc { background-color: var(--alencas-green); }
-        .btn-calc:hover { background-color: #218838; transform: translateY(-1px); }
+        .btn-calc:hover { background-color: #218838; transform: scale(1.02); }
         
-        /* BOTÃO LIMPAR VERMELHO */
         .btn-clear { background-color: var(--alencas-red); }
         .btn-clear:hover { background-color: #c82333; }
 
@@ -89,13 +99,12 @@
         }
 
         .total-price { font-size: 32px; font-weight: 800; color: #4fd1c5; text-align: center; margin-top: 10px; }
-
         #btn-whatsapp { margin-top: 15px; width: 100%; background-color: #25D366; color: white; padding: 16px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; }
 
         #modal-erro { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); align-items: center; justify-content: center; backdrop-filter: blur(4px); }
         .modal-content { background: var(--sidebar-bg); color: var(--text-main); padding: 30px; border-radius: 12px; width: 90%; max-width: 400px; text-align: center; border: 1px solid var(--border-color); }
         
-        #map { flex: 1; z-index: 1; filter: invert(90%) hue-rotate(180deg) brightness(95%) contrast(90%); }
+        #map { flex: 1; z-index: 1; } /* Removido filtro para voltar ao padrão Google */
 
         @media (max-width: 768px) { #app-container { flex-direction: column-reverse; } #sidebar { width: 100%; max-height: 80vh; } #map { height: 20vh; } }
     </style>
@@ -105,7 +114,7 @@
 <div id="modal-erro">
     <div class="modal-content">
         <h3 style="color: #f28b82;">📍 Endereço não encontrado</h3>
-        <p style="font-size: 14px; color: var(--text-muted);">Informe o endereço completo ou ponto de referência para enviarmos ao Alencar:</p>
+        <p style="font-size: 14px; color: var(--text-muted);">Informe o endereço completo para enviarmos ao Alencar:</p>
         <textarea id="manual-address" rows="3" placeholder="Ex: Rua João Exemplo, 123, perto do mercado..."></textarea>
         <button style="background: #25D366; color: white; margin-top: 15px; width: 100%;" onclick="enviarManual()">Enviar via WhatsApp</button>
         <button class="btn-clear" style="margin-top: 10px; width: 100%;" onclick="fecharModal()">Voltar</button>
@@ -114,44 +123,49 @@
 
 <div id="app-container">
     <div id="sidebar">
-        <h1>ALENCAS FRETE</h1>
-        <div class="info-box">
-            🛵 <strong>Origem:</strong> Av. João Dias, 2074 - Sto Amaro<br>
-            💰 <strong>Mínimo:</strong> R$ 5,00 | <strong>KM:</strong> R$ 1,90
+        <div class="sidebar-header">
+            <h1>ALENCAS FRETE</h1>
         </div>
 
-        <form id="frete-form" onsubmit="validarEProcessar(event)">
-            <label>Nome do Cliente *</label>
-            <input type="text" id="nome" placeholder="Nome completo" required>
-            
-            <div style="display:flex; gap:10px">
-                <div style="flex:1"><label>Data *</label><input type="date" id="data" required></div>
-                <div style="flex:1"><label>Hora *</label><input type="time" id="hora" required></div>
+        <div class="form-content">
+            <div class="info-box">
+                🛵 <strong>Origem:</strong> Av. João Dias, 2074 - Sto Amaro<br>
+                💰 <strong>Mínimo:</strong> R$ 5,00 | <strong>KM:</strong> R$ 1,90
             </div>
-            
-            <div style="display:flex; gap:10px">
-                <div style="flex:1"><label>CEP *</label><input type="text" id="cep" maxlength="8" onblur="buscarCEP(this.value)" required placeholder="00000000"></div>
-                <div style="flex:0.5"><label>Nº *</label><input type="text" id="numero" required placeholder="Nº"></div>
-            </div>
-            
-            <label>Rua *</label><input type="text" id="rua" required>
-            <div style="display:flex; gap:10px">
-                <div style="flex:1"><label>Bairro *</label><input type="text" id="bairro" required></div>
-                <div style="flex:1"><label>Cidade *</label><input type="text" id="cidade" required></div>
-            </div>
-            
-            <div class="btn-group">
-                <button type="button" class="btn-clear" onclick="location.reload()">Limpar</button>
-                <button type="submit" class="btn-calc">Calcular Frete</button>
-            </div>
-        </form>
 
-        <div id="result-area">
-            <div style="text-align:center; color: var(--text-muted); border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
-                <span id="res-dist" style="color: white; font-weight: bold;"></span> | <span id="res-tempo"></span>
-                <div class="total-price" id="res-valor"></div>
+            <form id="frete-form" onsubmit="validarEProcessar(event)">
+                <label>Nome do Cliente *</label>
+                <input type="text" id="nome" placeholder="Nome completo" required>
+                
+                <div style="display:flex; gap:10px">
+                    <div style="flex:1"><label>Data *</label><input type="date" id="data" required></div>
+                    <div style="flex:1"><label>Hora *</label><input type="time" id="hora" required></div>
+                </div>
+                
+                <div style="display:flex; gap:10px">
+                    <div style="flex:1"><label>CEP *</label><input type="text" id="cep" maxlength="8" onblur="buscarCEP(this.value)" required placeholder="00000000"></div>
+                    <div style="flex:0.5"><label>Nº *</label><input type="text" id="numero" required placeholder="Nº"></div>
+                </div>
+                
+                <label>Rua *</label><input type="text" id="rua" required>
+                <div style="display:flex; gap:10px">
+                    <div style="flex:1"><label>Bairro *</label><input type="text" id="bairro" required></div>
+                    <div style="flex:1"><label>Cidade *</label><input type="text" id="cidade" required></div>
+                </div>
+                
+                <div class="btn-group">
+                    <button type="button" class="btn-clear" onclick="location.reload()">Limpar</button>
+                    <button type="submit" class="btn-calc">Calcular Frete</button>
+                </div>
+            </form>
+
+            <div id="result-area">
+                <div style="text-align:center; color: var(--text-muted); border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+                    <span id="res-dist" style="color: white; font-weight: bold;"></span> | <span id="res-tempo"></span>
+                    <div class="total-price" id="res-valor"></div>
+                </div>
+                <button id="btn-whatsapp" onclick="enviar()">Confirmar Pedido</button>
             </div>
-            <button id="btn-whatsapp" onclick="enviar()">Confirmar Pedido</button>
         </div>
     </div>
     <div id="map"></div>
@@ -166,9 +180,9 @@
     let map, routingControl, vFinal = 0, dFinal = "";
 
     window.onload = () => {
-        map = L.map('map', {zoomControl: false}).setView([LAT_ORIGEM, LNG_ORIGEM], 15);
+        map = L.map('map', {zoomControl: true}).setView([LAT_ORIGEM, LNG_ORIGEM], 15);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-        L.marker([LAT_ORIGEM, LNG_ORIGEM]).addTo(map);
+        L.marker([LAT_ORIGEM, LNG_ORIGEM]).addTo(map).bindPopup("Origem").openPopup();
         document.getElementById('data').value = new Date().toISOString().split('T')[0];
     };
 
@@ -188,11 +202,22 @@
     async function validarEProcessar(e) {
         e.preventDefault();
         const cep = document.getElementById('cep').value;
+        const rua = document.getElementById('rua').value;
+        const num = document.getElementById('numero').value;
+        const cidade = document.getElementById('cidade').value;
+
         try {
             const resp = await fetch(`https://nominatim.openstreetmap.org/search?format=json&postalcode=${cep}&country=Brazil&limit=1`);
             const data = await resp.json();
-            if (data.length > 0) calcular(data[0].lat, data[0].lon);
-            else abrirModal();
+            if (data.length > 0) {
+                calcular(data[0].lat, data[0].lon);
+            } else {
+                const buscaEnd = `${rua}, ${num}, ${cidade}`;
+                const respEnd = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(buscaEnd)}&limit=1`);
+                const dataEnd = await respEnd.json();
+                if(dataEnd.length > 0) calcular(dataEnd[0].lat, dataEnd[0].lon);
+                else abrirModal();
+            }
         } catch (err) { abrirModal(); }
     }
 
@@ -232,7 +257,7 @@
 
     function enviar() {
         const nome = document.getElementById('nome').value;
-        const endereco = `${document.getElementById('rua').value}, ${document.getElementById('numero').value}`;
+        const endereco = `${document.getElementById('rua').value}, ${document.getElementById('numero').value} - ${document.getElementById('bairro').value}`;
         const msg = `*NOVO FRETE - ALENCAS* 🛵%0A%0A👤*Cliente:* ${nome}%0A📏*Distância:* ${dFinal}%0A💰*Valor:* R$ ${vFinal}%0A📍*End:* ${endereco}`;
         window.open(`https://wa.me/${WHATSAPP}?text=${msg}`);
     }
