@@ -79,8 +79,8 @@
 
             <div class="row-inputs">
                 <div class="col">
-                    <label>CEP (Somente Números)</label>
-                    <input type="text" id="cep" placeholder="00000000" maxlength="8" inputmode="numeric" 
+                    <label>CEP (Somente Números) *</label>
+                    <input type="text" id="cep" placeholder="00000000" maxlength="8" inputmode="numeric" required 
                            oninput="this.value = this.value.replace(/[^0-9]/g, '')" 
                            onblur="buscarCEP(this.value)">
                 </div>
@@ -154,10 +154,8 @@
 
         const dInput = document.getElementById('data');
         const hoje = new Date();
-        const dataMinima = hoje.toISOString().split('T')[0];
-        dInput.min = dataMinima;
-        dInput.max = "2025-12-31";
-        dInput.value = dataMinima;
+        dInput.min = hoje.toISOString().split('T')[0];
+        dInput.value = hoje.toISOString().split('T')[0];
     };
 
     function buscarCEP(valor) {
@@ -176,16 +174,37 @@
         }
     }
 
-    function validarEProcessar(e) {
+    async function validarEProcessar(e) {
         e.preventDefault();
-        const end = `${document.getElementById('rua').value}, ${document.getElementById('numero').value}, ${document.getElementById('bairro').value}, ${document.getElementById('cidade').value}`;
-        
-        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(end)}&limit=1`)
-            .then(r => r.json())
-            .then(data => {
-                if (data.length > 0) calcular(data[0].lat, data[0].lon);
-                else alert("Endereço não encontrado.");
-            });
+        const cep = document.getElementById('cep').value;
+        const rua = document.getElementById('rua').value;
+        const num = document.getElementById('numero').value;
+        const bairro = document.getElementById('bairro').value;
+        const cidade = document.getElementById('cidade').value;
+
+        // ESTRATÉGIA: Tentar primeiro pelo CEP (mais preciso para a API de mapas)
+        try {
+            const respCEP = await fetch(`https://nominatim.openstreetmap.org/search?format=json&postalcode=${cep}&country=Brazil&limit=1`);
+            const dataCEP = await respCEP.json();
+
+            if (dataCEP.length > 0) {
+                // Se achou o CEP, usa as coordenadas dele
+                calcular(dataCEP[0].lat, dataCEP[0].lon);
+            } else {
+                // Se o CEP falhar, tenta pelo endereço escrito completo
+                const enderecoFull = `${rua}, ${num}, ${bairro}, ${cidade}`;
+                const respEnd = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(enderecoFull)}&limit=1`);
+                const dataEnd = await respEnd.json();
+
+                if (dataEnd.length > 0) {
+                    calcular(dataEnd[0].lat, dataEnd[0].lon);
+                } else {
+                    alert("Endereço não localizado pelo sistema. Verifique o CEP ou insira o nome da rua e número corretamente.");
+                }
+            }
+        } catch (error) {
+            alert("Erro na conexão com o serviço de mapas. Tente novamente.");
+        }
     }
 
     function calcular(lat, lon) {
@@ -227,7 +246,6 @@
     }
 
     function enviar() {
-        // SEGURANÇA: Só envia se o cálculo foi feito
         if (vFinal === 0 || dFinal === "") {
             alert("Por favor, clique em CALCULAR FRETE antes de enviar.");
             return;
@@ -237,31 +255,21 @@
         const dataRaw = document.getElementById('data').value.split('-');
         const data = `${dataRaw[2]}/${dataRaw[1]}/${dataRaw[0]}`;
         const hora = document.getElementById('hora').value;
-        
-        const rua = document.getElementById('rua').value;
-        const num = document.getElementById('numero').value;
-        const bairro = document.getElementById('bairro').value;
-        const cidade = document.getElementById('cidade').value;
+        const enderecoCompleto = `${document.getElementById('rua').value}, ${document.getElementById('numero').value} - ${document.getElementById('bairro').value}, ${document.getElementById('cidade').value}`;
 
-        // Monta o endereço completo
-        const enderecoCompleto = `${rua}, ${num} - ${bairro}, ${cidade}`;
-
-        // Link oficial do Google Maps de busca
-        // encodeURIComponent converte espaços e acentos para formato web
+        // Correção do Link do Google Maps
         const linkMapa = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(enderecoCompleto)}`;
 
         let msg = `*NOVO FRETE - ALENCAS* 🛵%0A%0A`;
-		
-		msg += `_Favor confirmar!_%0A`;
-		
+        msg += `_Favor confirmar!_%0A%0A`;
         msg += `👤 *Cliente:* ${nome}%0A`;
         msg += `📅 *Data:* ${data}%0A`;
         msg += `⏰ *Hora:* ${hora}%0A`;
-		msg += `📏 *Distância:* ${dFinal}%0A`;
+        msg += `📏 *Distância:* ${dFinal}%0A`;
         msg += `💰 *Valor:* R$ ${vFinal}%0A%0A`;
         msg += `📍 *Endereço:* ${enderecoCompleto}%0A`;
-        msg += `🗺️ *Mapa:* ${linkMapa}%0A%0A`;
-       
+        msg += `🗺️ *Mapa:* ${linkMapa}`;
+        
         window.open(`https://wa.me/${WHATSAPP}?text=${msg}`);
     }
 
