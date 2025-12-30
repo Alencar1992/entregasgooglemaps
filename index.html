@@ -10,101 +10,92 @@
     
     <style>
         :root {
-            --alencas-gray: #808080;
-            --darker-gray: #666666;
-            --text-white: #ffffff;
+            --bg-dark: #121212;
+            --sidebar-bg: #1e1e1e;
+            --text-main: #e0e0e0;
+            --text-muted: #a0a0a0;
             --alencas-blue: #007bff;
             --alencas-green: #28a745;
             --alencas-red: #dc3545;
-            --input-border: #999999;
+            --input-bg: #2d2d2d;
+            --border-color: #333333;
         }
 
-        body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; height: 100vh; display: flex; flex-direction: column; background: var(--alencas-gray); color: var(--text-white); }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; height: 100vh; display: flex; flex-direction: column; background: var(--bg-dark); color: var(--text-main); }
         #app-container { display: flex; flex: 1; height: 100%; }
         
         #sidebar { 
             width: 420px; 
-            background: var(--alencas-gray); 
-            padding: 0; 
+            background: var(--sidebar-bg); 
+            padding: 25px; 
             overflow-y: auto; 
-            box-shadow: 4px 0 15px rgba(0,0,0,0.3); 
+            box-shadow: 4px 0 15px rgba(0,0,0,0.5); 
             z-index: 1000; 
             display: flex; 
             flex-direction: column; 
-            border-right: 1px solid var(--darker-gray);
+            gap: 10px; 
+            border-right: 1px solid var(--border-color);
         }
-
-        /* CABEÇALHO ESTILIZADO */
-        .sidebar-header {
-            background-color: #d3d3d3; /* Cinza claro para destacar o título */
-            padding: 25px 15px;
-            text-align: center;
-            border-bottom: 4px solid var(--alencas-blue);
-        }
-
-        .sidebar-header h1 { 
+        
+        /* TÍTULO COM BORDA BRANCA E FONTE AZUL */
+        h1 { 
             color: var(--alencas-blue); 
             margin: 0; 
-            font-family: 'Rockwell', 'Courier New', serif;
-            font-size: 34px; 
+            font-size: 32px; 
             font-weight: 900; 
+            text-align: center; 
+            letter-spacing: 2px;
             text-transform: uppercase;
-            -webkit-text-stroke: 1.2px white;
-            text-shadow: 2px 2px 0px rgba(0,0,0,0.1);
-        }
-
-        .form-content {
-            padding: 20px 25px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            background: var(--alencas-gray);
+            -webkit-text-stroke: 1.5px white; /* Borda Branca */
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--border-color);
         }
         
-        .info-box { background: rgba(255, 255, 255, 0.1); border-left: 5px solid var(--alencas-blue); padding: 12px; font-size: 13px; color: white; border-radius: 4px; }
+        .info-box { background: #1a2332; border-left: 5px solid var(--alencas-blue); padding: 12px; font-size: 13px; color: #8ab4f8; border-radius: 4px; margin-top: 5px;}
         
-        label { display: block; margin-top: 8px; font-weight: 700; color: #f0f0f0; font-size: 11px; text-transform: uppercase; }
+        label { display: block; margin-top: 8px; font-weight: 600; color: var(--text-muted); font-size: 11px; text-transform: uppercase; }
         
         input, textarea { 
             width: 100%; 
             padding: 12px; 
             margin-top: 4px; 
-            background: #fdfdfd; 
-            border: 2px solid var(--input-border); 
+            background: var(--input-bg); 
+            border: 1px solid var(--border-color); 
             border-radius: 6px; 
             box-sizing: border-box; 
             font-size: 14px; 
-            color: #333; 
-            font-weight: 600;
+            color: white; 
         }
 
         .btn-group { display: flex; gap: 10px; margin-top: 20px; }
-        button { flex: 1; padding: 14px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 14px; text-transform: uppercase; color: white; transition: 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        button { flex: 1; padding: 14px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 14px; text-transform: uppercase; transition: 0.2s; color: white; }
         
-        /* BOTÕES SOLICITADOS */
+        /* BOTÃO CALCULAR VERDE */
         .btn-calc { background-color: var(--alencas-green); }
-        .btn-calc:hover { background-color: #218838; transform: translateY(-2px); }
+        .btn-calc:hover { background-color: #218838; transform: translateY(-1px); }
         
+        /* BOTÃO LIMPAR VERMELHO */
         .btn-clear { background-color: var(--alencas-red); }
         .btn-clear:hover { background-color: #c82333; }
 
         #result-area { 
             margin-top: 20px; 
             padding: 20px; 
-            background: #3e4d4c; 
-            border: 2px solid #2d3a39; 
+            background: #0f2d2b; 
+            border: 1px solid #1a4d49; 
             border-radius: 8px; 
             display: none; 
         }
 
-        .total-price { font-size: 36px; font-weight: 900; color: #00ffcc; text-align: center; margin-top: 10px; text-shadow: 1px 1px 2px black; }
-        #btn-whatsapp { margin-top: 15px; width: 100%; background-color: #25D366; color: white; padding: 18px; border-radius: 8px; border: none; font-weight: 900; cursor: pointer; font-size: 16px; }
+        .total-price { font-size: 32px; font-weight: 800; color: #4fd1c5; text-align: center; margin-top: 10px; }
 
-        /* MODAL CINZA */
-        #modal-erro { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); align-items: center; justify-content: center; backdrop-filter: blur(3px); }
-        .modal-content { background: var(--alencas-gray); color: white; padding: 30px; border-radius: 12px; width: 90%; max-width: 400px; text-align: center; border: 3px solid white; }
+        #btn-whatsapp { margin-top: 15px; width: 100%; background-color: #25D366; color: white; padding: 16px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; }
+
+        #modal-erro { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+        .modal-content { background: var(--sidebar-bg); color: var(--text-main); padding: 30px; border-radius: 12px; width: 90%; max-width: 400px; text-align: center; border: 1px solid var(--border-color); }
         
-        #map { flex: 1; z-index: 1; }
+        #map { flex: 1; z-index: 1; filter: invert(90%) hue-rotate(180deg) brightness(95%) contrast(90%); }
 
         @media (max-width: 768px) { #app-container { flex-direction: column-reverse; } #sidebar { width: 100%; max-height: 80vh; } #map { height: 20vh; } }
     </style>
@@ -113,59 +104,54 @@
 
 <div id="modal-erro">
     <div class="modal-content">
-        <h3 style="color: #ffcccc; -webkit-text-stroke: 0.5px black;">📍 ENDEREÇO NÃO LOCALIZADO</h3>
-        <p style="font-size: 14px; margin-bottom: 15px;">Não encontramos no mapa. Digite o endereço completo ou um ponto de referência para enviar ao Alencar:</p>
-        <textarea id="manual-address" rows="3" placeholder="Ex: Rua João Exemplo, 123, perto da farmácia..."></textarea>
+        <h3 style="color: #f28b82;">📍 Endereço não encontrado</h3>
+        <p style="font-size: 14px; color: var(--text-muted);">Informe o endereço completo ou ponto de referência para enviarmos ao Alencar:</p>
+        <textarea id="manual-address" rows="3" placeholder="Ex: Rua João Exemplo, 123, perto do mercado..."></textarea>
         <button style="background: #25D366; color: white; margin-top: 15px; width: 100%;" onclick="enviarManual()">Enviar via WhatsApp</button>
-        <button class="btn-clear" style="margin-top: 10px; width: 100%;" onclick="fecharModal()">Voltar e Corrigir</button>
+        <button class="btn-clear" style="margin-top: 10px; width: 100%;" onclick="fecharModal()">Voltar</button>
     </div>
 </div>
 
 <div id="app-container">
     <div id="sidebar">
-        <div class="sidebar-header">
-            <h1>ALENCAS FRETE</h1>
+        <h1>ALENCAS FRETE</h1>
+        <div class="info-box">
+            🛵 <strong>Origem:</strong> Av. João Dias, 2074 - Sto Amaro<br>
+            💰 <strong>Mínimo:</strong> R$ 5,00 | <strong>KM:</strong> R$ 1,90
         </div>
 
-        <div class="form-content">
-            <div class="info-box">
-                🛵 <b>ORIGEM:</b> Av. João Dias, 2074 - Sto Amaro<br>
-                💰 <b>MÍNIMO:</b> R$ 5,00 | <b>KM:</b> R$ 1,90
+        <form id="frete-form" onsubmit="validarEProcessar(event)">
+            <label>Nome do Cliente *</label>
+            <input type="text" id="nome" placeholder="Nome completo" required>
+            
+            <div style="display:flex; gap:10px">
+                <div style="flex:1"><label>Data *</label><input type="date" id="data" required></div>
+                <div style="flex:1"><label>Hora *</label><input type="time" id="hora" required></div>
             </div>
-
-            <form id="frete-form" onsubmit="validarEProcessar(event)">
-                <label>Nome do Cliente *</label>
-                <input type="text" id="nome" placeholder="Digite seu nome" required>
-                
-                <div style="display:flex; gap:10px">
-                    <div style="flex:1"><label>Data *</label><input type="date" id="data" required></div>
-                    <div style="flex:1"><label>Hora *</label><input type="time" id="hora" required></div>
-                </div>
-                
-                <div style="display:flex; gap:10px">
-                    <div style="flex:1"><label>CEP *</label><input type="text" id="cep" maxlength="8" onblur="buscarCEP(this.value)" required placeholder="00000000"></div>
-                    <div style="flex:0.5"><label>Nº *</label><input type="text" id="numero" required placeholder="Nº"></div>
-                </div>
-                
-                <label>Rua *</label><input type="text" id="rua" required>
-                <div style="display:flex; gap:10px">
-                    <div style="flex:1"><label>Bairro *</label><input type="text" id="bairro" required></div>
-                    <div style="flex:1"><label>Cidade *</label><input type="text" id="cidade" required></div>
-                </div>
-                
-                <div class="btn-group">
-                    <button type="button" class="btn-clear" onclick="location.reload()">Limpar</button>
-                    <button type="submit" class="btn-calc">Calcular Frete</button>
-                </div>
-            </form>
-
-            <div id="result-area">
-                <div style="text-align:center; padding-bottom: 10px;">
-                    <span id="res-dist" style="font-weight: 900; font-size: 18px;"></span> | <span id="res-tempo"></span>
-                    <div class="total-price" id="res-valor"></div>
-                </div>
-                <button id="btn-whatsapp" onclick="enviar()">Confirmar e Enviar Pedido</button>
+            
+            <div style="display:flex; gap:10px">
+                <div style="flex:1"><label>CEP *</label><input type="text" id="cep" maxlength="8" onblur="buscarCEP(this.value)" required placeholder="00000000"></div>
+                <div style="flex:0.5"><label>Nº *</label><input type="text" id="numero" required placeholder="Nº"></div>
             </div>
+            
+            <label>Rua *</label><input type="text" id="rua" required>
+            <div style="display:flex; gap:10px">
+                <div style="flex:1"><label>Bairro *</label><input type="text" id="bairro" required></div>
+                <div style="flex:1"><label>Cidade *</label><input type="text" id="cidade" required></div>
+            </div>
+            
+            <div class="btn-group">
+                <button type="button" class="btn-clear" onclick="location.reload()">Limpar</button>
+                <button type="submit" class="btn-calc">Calcular Frete</button>
+            </div>
+        </form>
+
+        <div id="result-area">
+            <div style="text-align:center; color: var(--text-muted); border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+                <span id="res-dist" style="color: white; font-weight: bold;"></span> | <span id="res-tempo"></span>
+                <div class="total-price" id="res-valor"></div>
+            </div>
+            <button id="btn-whatsapp" onclick="enviar()">Confirmar Pedido</button>
         </div>
     </div>
     <div id="map"></div>
@@ -180,9 +166,9 @@
     let map, routingControl, vFinal = 0, dFinal = "";
 
     window.onload = () => {
-        map = L.map('map', {zoomControl: true}).setView([LAT_ORIGEM, LNG_ORIGEM], 15);
+        map = L.map('map', {zoomControl: false}).setView([LAT_ORIGEM, LNG_ORIGEM], 15);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-        L.marker([LAT_ORIGEM, LNG_ORIGEM]).addTo(map).bindPopup("Alencas Frete - Origem").openPopup();
+        L.marker([LAT_ORIGEM, LNG_ORIGEM]).addTo(map);
         document.getElementById('data').value = new Date().toISOString().split('T')[0];
     };
 
@@ -202,22 +188,11 @@
     async function validarEProcessar(e) {
         e.preventDefault();
         const cep = document.getElementById('cep').value;
-        const rua = document.getElementById('rua').value;
-        const num = document.getElementById('numero').value;
-        const cidade = document.getElementById('cidade').value;
-
         try {
             const resp = await fetch(`https://nominatim.openstreetmap.org/search?format=json&postalcode=${cep}&country=Brazil&limit=1`);
             const data = await resp.json();
-            if (data.length > 0) {
-                calcular(data[0].lat, data[0].lon);
-            } else {
-                const buscaEnd = `${rua}, ${num}, ${cidade}`;
-                const respEnd = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(buscaEnd)}&limit=1`);
-                const dataEnd = await respEnd.json();
-                if(dataEnd.length > 0) calcular(dataEnd[0].lat, dataEnd[0].lon);
-                else abrirModal();
-            }
+            if (data.length > 0) calcular(data[0].lat, data[0].lon);
+            else abrirModal();
         } catch (err) { abrirModal(); }
     }
 
@@ -257,8 +232,8 @@
 
     function enviar() {
         const nome = document.getElementById('nome').value;
-        const endereco = `${document.getElementById('rua').value}, ${document.getElementById('numero').value} - ${document.getElementById('bairro').value}`;
-        const msg = `*PEDIDO DE FRETE* 🛵%0A%0A👤*Cliente:* ${nome}%0A📏*Distância:* ${dFinal}%0A💰*Valor:* R$ ${vFinal}%0A📍*End:* ${endereco}`;
+        const endereco = `${document.getElementById('rua').value}, ${document.getElementById('numero').value}`;
+        const msg = `*NOVO FRETE - ALENCAS* 🛵%0A%0A👤*Cliente:* ${nome}%0A📏*Distância:* ${dFinal}%0A💰*Valor:* R$ ${vFinal}%0A📍*End:* ${endereco}`;
         window.open(`https://wa.me/${WHATSAPP}?text=${msg}`);
     }
 </script>
