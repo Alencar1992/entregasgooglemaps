@@ -1,0 +1,48 @@
+ALENCAS FRETE
+
+OBJETIVO - Criar um site para consultar frete para os clientes e definir o preço do km e enviar mensagem para whatsapp do motoboy
+
+LAYOUT DO SITE - Semelhante ao google maps, dados de preenchimento no lado esquerdo e o mapa na direita
+
+LAYOUT PARA CELULARES - Semelhante ao google maps para celulares o algo parecido que seja bem facil de usar
+
+DADOS INFORMATIVO
+	Ter um campo informativo de onde esta saindo o frete, no caso um endereço da casa do motoboy (AV JOAO DIAS 2074 - SANTO AMARO)
+	Informar também o frete minimo (5 reais)
+	Valor por km é 1,90 reais
+
+
+DADOS QUE O USUARIO PRECISA PREENCHER
+	Nome Completo do Cliente
+	Data da Entrega
+	Horario da Entrega
+	Endereço de Destino (Pensar em sites semelhantes para ter algo bem intuitivo e preciso)
+		Para essa parte de pesquisar o endereço para fazer o calculo, pensar em algo bem preciso pois envolve valores
+	
+BOTOES DO SITE
+	Botao de Limpar os dados digitados
+	Botao de calcular o frete 
+		Essa parte de buscar o 
+	
+INFORMATIVO
+	Mostrar a distancia em kms
+	Mostrar o valor que o cliente precisa pagar
+	
+BOTAO DE CONFIRMAÇÃO
+	Enviar para Alencar
+	 - Esse botao vai encaminhar os dados digitados para o whatsapp do responsavel
+		- Informações no whatsapp bem bonitinho
+			Nome Completo do Cliente
+			Data da Entrega
+			Horario da Entrega
+			Endereço de Destino
+			Distancia KM
+			Preço
+
+MELHORIAS
+
+Link o Maps
+	- Ter na mensagem do whatsapp um link com o trajeto para ficar fácil de abrir a rota no aplicativo de mapas do celular
+
+Controle de fretes
+	- Armazenar todos os fretes feitos em uma tabela para controle e acompanhamento (Somente eu posso ver esses dados)
