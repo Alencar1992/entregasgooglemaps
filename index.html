@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alencas Frete - Oficial</title>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+    
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; height: 100vh; display: flex; flex-direction: column; background: #f0f2f5; }
+        #app-container { display: flex; flex: 1; height: 100%; }
+        
+        #sidebar { width: 420px; background: white; padding: 25px; overflow-y: auto; box-shadow: 2px 0 15px rgba(0,0,0,0.1); z-index: 1000; display: flex; flex-direction: column; gap: 10px; }
+        
+        h1 { color: #1a73e8; margin: 0; font-size: 24px; font-weight: 800; border-bottom: 2px solid #f1f3f4; padding-bottom: 10px; text-align: center; }
+        
+        .info-box { background: #e8f0fe; border-left: 5px solid #1a73e8; padding: 12px; font-size: 13px; color: #1967d2; border-radius: 4px; }
+        
+        label { display: block; margin-top: 8px; font-weight: 600; color: #3c4043; font-size: 12px; text-transform: uppercase; }
+        input { width: 100%; padding: 10px; margin-top: 4px; border: 1px solid #dadce0; border-radius: 4px; box-sizing: border-box; font-size: 14px; }
+        input:focus { border-color: #1a73e8; outline: none; box-shadow: 0 0 0 2px rgba(26,115,232,0.2); }
+
+        .row-inputs { display: flex; gap: 10px; }
+        .col { flex: 1; }
+
+        .btn-group { display: flex; gap: 10px; margin-top: 20px; }
+        button { flex: 1; padding: 14px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 14px; text-transform: uppercase; transition: 0.2s; }
+        
+        .btn-calc { background-color: #1a73e8; color: white; }
+        .btn-calc:hover { background-color: #1557b0; }
+        
+        .btn-clear { background-color: #f1f3f4; color: #3c4043; }
+
+        #result-area { margin-top: 20px; padding: 20px; background: #e6fffa; border: 1px solid #b2f5ea; border-radius: 8px; display: none; }
+        .result-line { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 16px; color: #2d3748; }
+        .total-price { font-size: 32px; font-weight: 800; color: #2c7a7b; text-align: center; margin-top: 10px; }
+
+        #btn-whatsapp { margin-top: 15px; width: 100%; background-color: #25D366; color: white; font-size: 16px; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 16px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; }
+
+        #map { flex: 1; z-index: 1; }
+        .leaflet-routing-container { display: none !important; }
+
+        @media (max-width: 768px) {
+            #app-container { flex-direction: column-reverse; }
+            #sidebar { width: 100%; max-height: 70vh; border-radius: 20px 20px 0 0; }
+            #map { height: 30vh; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="app-container">
+    <div id="sidebar">
+        <h1>ALENCAS FRETE</h1>
+        
+        <div class="info-box">
+            🛵 <strong>Origem:</strong> Av. João Dias, 2074 - Santo Amaro<br>
+            💰 <strong>Mínimo:</strong> R$ 5,00 | <strong>KM:</strong> R$ 1,90
+        </div>
+
+        <form id="frete-form" onsubmit="validarEProcessar(event)">
+            <label>Nome Completo do Cliente *</label>
+            <input type="text" id="nome" placeholder="Ex: João Silva" required>
+
+            <div class="row-inputs">
+                <div class="col">
+                    <label>Data da Entrega *</label>
+                    <input type="date" id="data" required>
+                </div>
+                <div class="col">
+                    <label>Horário *</label>
+                    <input type="time" id="hora" required>
+                </div>
+            </div>
+
+            <hr style="border: 0; border-top: 1px solid #f1f3f4; margin: 15px 0;">
+
+            <div class="row-inputs">
+                <div class="col">
+                    <label>CEP (Somente Números)</label>
+                    <input type="text" id="cep" placeholder="00000000" maxlength="8" inputmode="numeric" 
+                           oninput="this.value = this.value.replace(/[^0-9]/g, '')" 
+                           onblur="buscarCEP(this.value)">
+                </div>
+                <div class="col" style="flex: 0.5;">
+                    <label>Número *</label>
+                    <input type="text" id="numero" inputmode="numeric" required 
+                           oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                </div>
+            </div>
+
+            <label>Rua *</label>
+            <input type="text" id="rua" required>
+
+            <div class="row-inputs">
+                <div class="col">
+                    <label>Bairro *</label>
+                    <input type="text" id="bairro" required>
+                </div>
+                <div class="col">
+                    <label>Cidade *</label>
+                    <input type="text" id="cidade" required>
+                </div>
+            </div>
+
+            <div class="btn-group">
+                <button type="button" class="btn-clear" onclick="limpar()">Limpar</button>
+                <button type="submit" class="btn-calc">Calcular Frete</button>
+            </div>
+        </form>
+
+        <div id="result-area">
+            <div class="result-line"><span>Distância:</span> <strong id="res-dist">0 km</strong></div>
+            <div class="result-line"><span>Tempo Estimado:</span> <strong id="res-tempo">0 min</strong></div>
+            <div class="total-price" id="res-valor">R$ 0,00</div>
+            
+            <button id="btn-whatsapp" onclick="enviar()">
+                Enviar para Alencar
+            </button>
+        </div>
+    </div>
+
+    <div id="map"></div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+
+<script>
+    const LAT_ORIGEM = -23.644629547444527;
+    const LNG_ORIGEM = -46.720383237596;
+    const VALOR_KM = 1.90;
+    const FRETE_MINIMO = 5.00;
+    const WHATSAPP = "5511981071822"; 
+
+    let map, routingControl;
+    let vFinal = 0, dFinal = "";
+
+    const motoIcon = L.icon({
+        iconUrl: 'https://cdn-icons-png.flaticon.com/512/171/171250.png',
+        iconSize: [40, 40],
+        iconAnchor: [20, 40],
+        popupAnchor: [0, -40]
+    });
+
+    window.onload = () => {
+        map = L.map('map').setView([LAT_ORIGEM, LNG_ORIGEM], 15);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        
+        L.marker([LAT_ORIGEM, LNG_ORIGEM], {icon: motoIcon}).addTo(map)
+            .bindPopup("<b>Alencas Frete</b><br>Origem").openPopup();
+
+        const dInput = document.getElementById('data');
+        const hoje = new Date();
+        const dataMinima = hoje.toISOString().split('T')[0];
+        dInput.min = dataMinima;
+        dInput.max = "2025-12-31";
+        dInput.value = dataMinima;
+    };
+
+    function buscarCEP(valor) {
+        const cep = valor.replace(/\D/g, '');
+        if (cep.length === 8) {
+            fetch(`https://viacep.com.br/ws/${cep}/json/`)
+                .then(r => r.json())
+                .then(d => {
+                    if (!d.erro) {
+                        document.getElementById('rua').value = d.logradouro;
+                        document.getElementById('bairro').value = d.bairro;
+                        document.getElementById('cidade').value = d.localidade;
+                        document.getElementById('numero').focus();
+                    }
+                });
+        }
+    }
+
+    function validarEProcessar(e) {
+        e.preventDefault();
+        const end = `${document.getElementById('rua').value}, ${document.getElementById('numero').value}, ${document.getElementById('bairro').value}, ${document.getElementById('cidade').value}`;
+        
+        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(end)}&limit=1`)
+            .then(r => r.json())
+            .then(data => {
+                if (data.length > 0) calcular(data[0].lat, data[0].lon);
+                else alert("Endereço não encontrado.");
+            });
+    }
+
+    function calcular(lat, lon) {
+        if (routingControl) map.removeControl(routingControl);
+
+        routingControl = L.Routing.control({
+            waypoints: [L.latLng(LAT_ORIGEM, LNG_ORIGEM), L.latLng(lat, lon)],
+            show: false,
+            addWaypoints: false,
+            draggableWaypoints: false,
+            lineOptions: {
+                styles: [
+                    {color: 'white', opacity: 0.9, weight: 12}, 
+                    {color: '#1a73e8', opacity: 1, weight: 7}   
+                ]
+            },
+            createMarker: (i, wp) => {
+                if (i === 1) return L.marker(wp.latLng).bindPopup("Destino");
+                return null;
+            }
+        }).addTo(map);
+
+        routingControl.on('routesfound', function(e) {
+            const s = e.routes[0].summary;
+            const km = (s.totalDistance / 1000).toFixed(1);
+            const min = Math.round(s.totalTime / 60);
+
+            let preco = km * VALOR_KM;
+            if (preco < FRETE_MINIMO) preco = FRETE_MINIMO;
+
+            vFinal = preco.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+            dFinal = km + " km";
+
+            document.getElementById('res-dist').innerText = dFinal;
+            document.getElementById('res-tempo').innerText = min + " min";
+            document.getElementById('res-valor').innerText = "R$ " + vFinal;
+            document.getElementById('result-area').style.display = "block";
+        });
+    }
+
+    function enviar() {
+        // SEGURANÇA: Só envia se o cálculo foi feito
+        if (vFinal === 0 || dFinal === "") {
+            alert("Por favor, clique em CALCULAR FRETE antes de enviar.");
+            return;
+        }
+
+        const nome = document.getElementById('nome').value;
+        const dataRaw = document.getElementById('data').value.split('-');
+        const data = `${dataRaw[2]}/${dataRaw[1]}/${dataRaw[0]}`;
+        const hora = document.getElementById('hora').value;
+        
+        const rua = document.getElementById('rua').value;
+        const num = document.getElementById('numero').value;
+        const bairro = document.getElementById('bairro').value;
+        const cidade = document.getElementById('cidade').value;
+
+        // Monta o endereço completo
+        const enderecoCompleto = `${rua}, ${num} - ${bairro}, ${cidade}`;
+
+        // Link oficial do Google Maps de busca
+        // encodeURIComponent converte espaços e acentos para formato web
+        const linkMapa = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(enderecoCompleto)}`;
+
+        let msg = `*NOVO FRETE - ALENCAS* 🛵%0A%0A`;
+		
+		msg += `_Favor confirmar!_%0A`;
+		
+        msg += `👤 *Cliente:* ${nome}%0A`;
+        msg += `📅 *Data:* ${data}%0A`;
+        msg += `⏰ *Hora:* ${hora}%0A`;
+		msg += `📏 *Distância:* ${dFinal}%0A`;
+        msg += `💰 *Valor:* R$ ${vFinal}%0A%0A`;
+        msg += `📍 *Endereço:* ${enderecoCompleto}%0A`;
+        msg += `🗺️ *Mapa:* ${linkMapa}%0A%0A`;
+       
+        window.open(`https://wa.me/${WHATSAPP}?text=${msg}`);
+    }
+
+    function limpar() {
+        location.reload();
+    }
+</script>
+</body>
+</html>
