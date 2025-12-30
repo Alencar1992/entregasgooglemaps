@@ -27,22 +27,22 @@
 
         /* Estilo do Modal de Erro */
         #modal-erro { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); align-items: center; justify-content: center; }
-        .modal-content { background: white; padding: 30px; border-radius: 12px; width: 90%; max-width: 400px; text-align: center; }
-        .btn-send-manual { background: #25D366; color: white; margin-top: 15px; }
+        .modal-content { background: white; padding: 30px; border-radius: 12px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .btn-send-manual { background: #25D366; color: white; margin-top: 15px; width: 100%; }
 
         #map { flex: 1; z-index: 1; }
-        @media (max-width: 768px) { #app-container { flex-direction: column-reverse; } #sidebar { width: 100%; } #map { height: 30vh; } }
+        @media (max-width: 768px) { #app-container { flex-direction: column-reverse; } #sidebar { width: 100%; max-height: 70vh; } #map { height: 30vh; } }
     </style>
 </head>
 <body>
 
 <div id="modal-erro">
     <div class="modal-content">
-        <h3>📍 Endereço não encontrado</h3>
-        <p style="font-size: 14px; color: #666;">Não conseguimos localizar o ponto no mapa automaticamente. Por favor, descreva o endereço abaixo:</p>
-        <textarea id="manual-address" rows="3" placeholder="Ex: Rua Tal, nº 10, próximo ao mercado X..."></textarea>
+        <h3 style="color: #d93025;">📍 Endereço não encontrado</h3>
+        <p style="font-size: 14px; color: #5f6368;">Não conseguimos localizar este endereço no mapa. Por favor, informe o endereço completo ou ponto de referência para que o Alencar calcule para você:</p>
+        <textarea id="manual-address" rows="3" placeholder="Ex: Rua João Exemplo, 123, próximo à farmácia tal..."></textarea>
         <button class="btn-send-manual" onclick="enviarManual()">Enviar para Alencar via WhatsApp</button>
-        <button class="btn-clear" style="margin-top: 10px; width: 100%;" onclick="fecharModal()">Cancelar</button>
+        <button class="btn-clear" style="margin-top: 10px; width: 100%;" onclick="fecharModal()">Voltar e Corrigir</button>
     </div>
 </div>
 
@@ -56,20 +56,25 @@
 
         <form id="frete-form" onsubmit="validarEProcessar(event)">
             <label>Nome Completo do Cliente *</label>
-            <input type="text" id="nome" required>
+            <input type="text" id="nome" placeholder="Seu nome aqui" required>
+            
             <div style="display:flex; gap:10px">
                 <div style="flex:1"><label>Data *</label><input type="date" id="data" required></div>
                 <div style="flex:1"><label>Hora *</label><input type="time" id="hora" required></div>
             </div>
+            
             <div style="display:flex; gap:10px">
-                <div style="flex:1"><label>CEP *</label><input type="text" id="cep" maxlength="8" onblur="buscarCEP(this.value)" required></div>
-                <div style="flex:0.5"><label>Nº *</label><input type="text" id="numero" required></div>
+                <div style="flex:1"><label>CEP *</label><input type="text" id="cep" maxlength="8" inputmode="numeric" onblur="buscarCEP(this.value)" required placeholder="00000000"></div>
+                <div style="flex:0.5"><label>Nº *</label><input type="text" id="numero" required placeholder="123"></div>
             </div>
+            
             <label>Rua *</label><input type="text" id="rua" required>
+            
             <div style="display:flex; gap:10px">
                 <div style="flex:1"><label>Bairro *</label><input type="text" id="bairro" required></div>
                 <div style="flex:1"><label>Cidade *</label><input type="text" id="cidade" required></div>
             </div>
+            
             <div class="btn-group">
                 <button type="button" class="btn-clear" onclick="location.reload()">Limpar</button>
                 <button type="submit" class="btn-calc">Calcular Frete</button>
@@ -77,11 +82,13 @@
         </form>
 
         <div id="result-area">
-            <div style="text-align:center">
-                <span id="res-dist"></span> | <span id="res-tempo"></span>
+            <div style="text-align:center; padding: 10px; border-bottom: 1px solid #b2f5ea;">
+                <span id="res-dist" style="font-weight: bold;"></span> | <span id="res-tempo"></span>
                 <div class="total-price" id="res-valor"></div>
             </div>
-            <button id="btn-whatsapp" onclick="enviar()">Enviar para Alencar</button>
+            <button id="btn-whatsapp" onclick="enviar()">
+                Confirmar e Enviar Pedido
+            </button>
         </div>
     </div>
     <div id="map"></div>
@@ -92,13 +99,15 @@
 
 <script>
     const LAT_ORIGEM = -23.644629547444527, LNG_ORIGEM = -46.720383237596;
-    const VALOR_KM = 1.90, FRETE_MINIMO = 5.00, WHATSAPP = "551981071822"; 
+    const VALOR_KM = 1.90, FRETE_MINIMO = 5.00;
+    const WHATSAPP = "5511981071822"; // NÚMERO ATUALIZADO
+    
     let map, routingControl, vFinal = 0, dFinal = "";
 
     window.onload = () => {
-        map = L.map('map').setView([LAT_ORIGEM, LNG_ORIGEM], 15);
+        map = L.map('map', {zoomControl: false}).setView([LAT_ORIGEM, LNG_ORIGEM], 15);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-        L.marker([LAT_ORIGEM, LNG_ORIGEM]).addTo(map).bindPopup("Origem").openPopup();
+        L.marker([LAT_ORIGEM, LNG_ORIGEM]).addTo(map).bindPopup("<b>Alencas Frete</b><br>Origem").openPopup();
         document.getElementById('data').value = new Date().toISOString().split('T')[0];
     };
 
@@ -110,6 +119,7 @@
                     document.getElementById('rua').value = d.logradouro;
                     document.getElementById('bairro').value = d.bairro;
                     document.getElementById('cidade').value = d.localidade;
+                    document.getElementById('numero').focus();
                 }
             });
         }
@@ -118,13 +128,28 @@
     async function validarEProcessar(e) {
         e.preventDefault();
         const cep = document.getElementById('cep').value;
+        const rua = document.getElementById('rua').value;
+        const num = document.getElementById('numero').value;
+        const cidade = document.getElementById('cidade').value;
+
         try {
+            // Tenta localizar pelo CEP primeiro
             const resp = await fetch(`https://nominatim.openstreetmap.org/search?format=json&postalcode=${cep}&country=Brazil&limit=1`);
             const data = await resp.json();
+            
             if (data.length > 0) {
                 calcular(data[0].lat, data[0].lon);
             } else {
-                abrirModal();
+                // Se o CEP falhar, tenta o endereço escrito
+                const buscaEnd = `${rua}, ${num}, ${cidade}`;
+                const respEnd = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(buscaEnd)}&limit=1`);
+                const dataEnd = await respEnd.json();
+                
+                if(dataEnd.length > 0) {
+                    calcular(dataEnd[0].lat, dataEnd[0].lon);
+                } else {
+                    abrirModal();
+                }
             }
         } catch (err) { abrirModal(); }
     }
@@ -133,7 +158,10 @@
         if (routingControl) map.removeControl(routingControl);
         routingControl = L.Routing.control({
             waypoints: [L.latLng(LAT_ORIGEM, LNG_ORIGEM), L.latLng(lat, lon)],
-            show: false, createMarker: () => null
+            show: false,
+            addWaypoints: false,
+            lineOptions: { styles: [{color: '#1a73e8', opacity: 1, weight: 6}] },
+            createMarker: (i, wp) => i === 1 ? L.marker(wp.latLng).bindPopup("Destino") : null
         }).addTo(map);
 
         routingControl.on('routesfound', (e) => {
@@ -142,10 +170,12 @@
             let preco = Math.max(km * VALOR_KM, FRETE_MINIMO);
             vFinal = preco.toLocaleString('pt-BR', {minimumFractionDigits: 2});
             dFinal = km + " km";
+            
             document.getElementById('res-dist').innerText = dFinal;
             document.getElementById('res-tempo').innerText = Math.round(s.totalTime / 60) + " min";
             document.getElementById('res-valor').innerText = "R$ " + vFinal;
             document.getElementById('result-area').style.display = "block";
+            map.flyTo([lat, lon], 14);
         });
     }
 
@@ -154,23 +184,33 @@
 
     function enviarManual() {
         const nome = document.getElementById('nome').value || "Cliente";
-        const info = document.getElementById('manual-address').value;
-        if (!info) return alert("Por favor, descreva o endereço.");
+        const manualInfo = document.getElementById('manual-address').value;
+        if (!manualInfo) return alert("Por favor, informe seu endereço.");
         
-        const msg = `*ALERTA: LOCALIZAÇÃO MANUAL* ⚠️%0A%0A` +
+        const msg = `*⚠️ ERRO DE LOCALIZAÇÃO - ALENCAS* %0A%0A` +
                     `👤 *Cliente:* ${nome}%0A` +
-                    `📍 *Endereço informado:* ${info}%0A%0A` +
-                    `_O site não conseguiu localizar automaticamente. Favor calcular manualmente._`;
+                    `📍 *Endereço:* ${manualInfo}%0A%0A` +
+                    `_O sistema não localizou automaticamente. Poderia calcular o frete para mim?_`;
         
         window.open(`https://wa.me/${WHATSAPP}?text=${msg}`);
-        alert("Sua solicitação foi enviada! Por favor, aguarde o retorno do Alencar no WhatsApp.");
+        alert("Mensagem enviada! Aguarde enquanto o Alencar responde no WhatsApp.");
         fecharModal();
     }
 
     function enviar() {
         const nome = document.getElementById('nome').value;
+        const dataRaw = document.getElementById('data').value.split('-');
+        const data = `${dataRaw[2]}/${dataRaw[1]}/${dataRaw[0]}`;
+        const hora = document.getElementById('hora').value;
         const endereco = `${document.getElementById('rua').value}, ${document.getElementById('numero').value} - ${document.getElementById('bairro').value}`;
-        const msg = `*NOVO FRETE - ALENCAS* 🛵%0A%0A👤 *Cliente:* ${nome}%0A📏 *Distância:* ${dFinal}%0A💰 *Valor:* R$ ${vFinal}%0A📍 *Endereço:* ${endereco}`;
+        
+        const msg = `*NOVO PEDIDO - ALENCAS FRETE* 🛵%0A%0A` +
+                    `👤 *Cliente:* ${nome}%0A` +
+                    `📅 *Data:* ${data} às ${hora}%0A` +
+                    `📏 *Distância:* ${dFinal}%0A` +
+                    `💰 *Valor:* R$ ${vFinal}%0A` +
+                    `📍 *Endereço:* ${endereco}`;
+        
         window.open(`https://wa.me/${WHATSAPP}?text=${msg}`);
     }
 </script>
